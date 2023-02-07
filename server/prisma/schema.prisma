@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model JwtToken {
+  id     String @id @default(uuid())
+  token  String
+  user   User   @relation(name: "userJwtTokenUser", fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  userId String
+
+  @@map("jwtTokens")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  fullName         String
+  username         String     @unique
+  email            String     @unique
+  password         String
+  activeFlag       Boolean    @default(true)
+  createdBy        User?      @relation(name: "createdUserId", fields: [createdByUserId], references: [id])
+  createdByUserId  String?
+  createdUserId    User[]     @relation("createdUserId")
+  createdAt        DateTime   @default(now())
+  updatedBy        User?      @relation(name: "updatedUserId", fields: [updatedByUserId], references: [id])
+  updatedByUserId  String?
+  updatedUserId    User[]     @relation("updatedUserId")
+  updatedAt        DateTime   @default(now()) @updatedAt
+  userJwtTokenUser JwtToken[] @relation("userJwtTokenUser")
+
+  @@map("users")
+}
